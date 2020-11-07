@@ -17,7 +17,8 @@
 #######################################
 function make_hash_tables() {
     for k in {3..31}; do
-        echo "python csvtohash.py $1 ${2}_${k}.p ${k}";    
+        echo "python csvtohash.py $1 ${2}_${k}.p ${k}";
+        python csvtohash.py $1 ${2}_${k}.p ${k}; 
     done
 };
 
@@ -30,6 +31,7 @@ function make_hash_tables() {
 #######################################
 function main() {
     # STEP 1: make the hash tables for each kmer size
+    echo; echo "Now constructing hash tables.."; echo; echo;
     make_hash_tables "secondarystructure_COMP533.csv" "prothashtable"
 }
 main;
