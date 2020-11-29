@@ -10,6 +10,11 @@ from tqdm import tqdm
 """
 This is the primary script and code for running the DebruijnExtend algorithm.
 
+USAGE
+         python DebruijnExtend_v2.py <input fasta> <kmer size> <output file>
+EXAMPLE:
+         python DebruijnExtend_v2.py examples/gfp.fasta 4 gfp.ss3
+
 Updates (v2; 11/28/2020): 
     * Here unelongated sequences are not extended further.
     * There is a max size set for the debruijn extension. This helps
@@ -159,13 +164,23 @@ def main():
     """
     This function controls the flow of the script.
     """
-    new_obj = DebruijnExtend()
+    # get input ready
+    input_seq_name = open(sys.argv[1]).readlines()[0].strip("\n")
     input_seq = open(sys.argv[1]).readlines()[1].strip("\n")
     k = int(sys.argv[2])
+    outputfile = sys.argv[3]
+    
+    # instantiate the object
+    new_obj = DebruijnExtend()
+
+    # run the algorithm
     print(f"input: \n {input_seq},\n k_mer size: {k}")
-    secondary = new_obj.debruijnextend_v1(input_seq, k)[0]
+    secondary, prob = new_obj.debruijnextend_v1(input_seq, k)[0]
     print(f"k={k}: {secondary}")
 
+    # save the output
+    outfile = open(outputfile, "w")
+    outfile.write(f"{input_seq_name} \n{prob} \n{secondary}")
 
 if __name__ == "__main__":
     main()

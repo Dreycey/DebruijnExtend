@@ -1,6 +1,20 @@
 # DebruijnExtend
 This repository contains the source code for the DebruijnExtend tool. This tool uses known secondary structures for common protein Khmers to predict the most likely secondary structure for a given input primary protein sequence.
 
+# Installation
+
+
+# How to use this tool
+USAGE:
+```                                                                           
+python DebruijnExtend_v2.py <input fasta> <kmer size> <output file>    
+```
+
+EXAMPLE:                                                                        
+```
+python DebruijnExtend_v2.py examples/gfp.fasta 4 gfp.ss3
+```
+
 # Directory Structure
 
 ## docs (informational)
