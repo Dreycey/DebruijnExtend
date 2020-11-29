@@ -54,7 +54,7 @@ class proteinhash:
         self.k_mersize = k # sliding window size for data structure
 
         # construct the hash table
-        self.construct_hash()
+        #self.construct_hash()
         
     def parse_csv(self):
         """
@@ -125,6 +125,7 @@ def main():
     # construct the hash table
     prothashOBJ = proteinhash(csvfile, kmer_size)
     prothashtable = prothashOBJ.construct_hash()
+    print(prothashtable)
     # pickle the hash table
     outfile = open(outpickle_name,'wb')
     pickle.dump(prothashtable,outfile)
