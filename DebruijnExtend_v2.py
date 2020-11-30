@@ -3,6 +3,7 @@
 import math
 import pickle
 import sys
+import os
 # non-std pkgs
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -84,7 +85,6 @@ class DebruijnExtend():
         # make max size constraint for stitchextend_dict
         max_dict_size = 10000
  
-        print("starting 1") 
         # LOOP 1: looping through the layers
         for kmer_i in tqdm(range(1,len(primary_karray))):
             kmer_lay = primary_karray[kmer_i]
@@ -93,7 +93,6 @@ class DebruijnExtend():
             # LOOP 2: loop through kmers per layer
             for kmer_in_layer, kmer_prob in potential_secondaries[kmer_lay].items():
                 # LOOP 3: loop through extended sequences
-                print(f"number of sequences: {len(stitchextend_dict.keys())}")
                 for seq, prob in stitchextend_dict.items():
                     end_of_ext = seq[-(k-1):] # last k-1
                     start_of_kmer = kmer_in_layer[:k-1] # up to k-1
@@ -107,15 +106,12 @@ class DebruijnExtend():
                         # add new seq and prob
                         stitchextend_dict_iplus[extended_seq] = extended_prob
 
-            print(f"number of sequences before: {len(stitchextend_dict.keys())}")
             for sequence_extended in seq_ext.keys():
                 del stitchextend_dict[sequence_extended] # delete the old
-            print(f"number of sequences after del: {len(stitchextend_dict.keys())}")
             top_probable_seqs_list = sorted(stitchextend_dict_iplus.items(), 
                                        key=lambda item: item[1])[:max_dict_size]
             top_probable_seqs_dict = {k: v for k, v in top_probable_seqs_list}
             stitchextend_dict.update(top_probable_seqs_dict) # add the new
-            print(f"number of sequences after add: {len(stitchextend_dict.keys())}")
 
         return stitchextend_dict
 
@@ -130,7 +126,8 @@ class DebruijnExtend():
         OUTPUT: 3-based secondary structure (using CEH, type: string) 
         """
         primary_karray = self.get_kmers(primary_seq, k)
-        hash_table = pickle.load(open(f"prot_hashtables/prothashtable_{k}.p", "rb"))
+        curr_loc = os.path.dirname(__file__)
+        hash_table = pickle.load(open(f"{curr_loc}/prot_hashtables/prothashtable_{k}.p", "rb"))
 
         ###
         # STEP 1: Find corresponding secondary structures
