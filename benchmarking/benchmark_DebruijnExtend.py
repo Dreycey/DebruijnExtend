@@ -9,7 +9,9 @@ import pickle
 
 """
 This script runs all benchmarking steps to evaluate the accuracy of the 
-DebruijnExtend algorithm and implimentation.
+DebruijnExtend algorithm and implimentation. As output it returns
+a pickled file of the results for all softwares tested.
+
 
 USAGE:
     python benchmark_DebruijnExtend.py <benchmark config file>
@@ -214,7 +216,7 @@ def main():
     """
     # Paths
     debruijn_path = "/Users/dreyceyalbin/Dropbox/Fall2020-classes/Algorithms/project/DebruijnExtend/"
-    python_path = debruijn_path + "DebruijnExtend_v2.py"
+    python_path = debruijn_path + "DebruijnExtend_v3.py"
     psipred_path = debruijn_path + "benchmarking/" + "runpsipred_single"
     kfold_dir = debruijn_path + "kfold_testandtrain/" 
     
