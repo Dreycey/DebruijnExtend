@@ -2,11 +2,37 @@ import sys
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np 
+import seaborn as sns
+import pandas as pd
 
-def plot_confusionmatrix():                                                        
+"""
+This script plots the output from the benchmarking results.
+
+The input into this script is the different pickled dictionaries 
+for each of the softwares, and the output is a series of results.
+
+Example:
+    python plotting_results.py deb_dict.p psipred_dict.p
+"""
+
+def plot_confusion_matrix(dict_list, i):                                                        
     """                                                                         
-    This function plot the 
+    This function plot the confusion matrix 
     """ 
+    N = 3
+    total_confusion = np.zeros((3,3))
+    software = dict_list[i]
+    # make total confusion matrix
+    for k_fold in range(N):
+        confusion_matrix = software[k_fold][2]
+        total_confusion += confusion_matrix
+    # turn array into pandas dataframe
+    total_confusion = pd.DataFrame(total_confusion, 
+                                   columns=['C', 'E', 'H'], 
+                                   index=['C', 'E', 'H'])
+    ## plot confusion matrix
+    ax = sns.heatmap(total_confusion, annot=True, linewidths=.5)
+    plt.show()
 
 def avg_acc_per_length(dict_list, i):
     """
@@ -117,5 +143,10 @@ def main():
     # accuracy vs length
     avg_acc_per_length(dict_list, 0)
     avg_acc_per_length(dict_list, 1)
+
+    # plot confusion matrices
+    plot_confusion_matrix(dict_list, 0)
+    plot_confusion_matrix(dict_list, 1)
+
 if __name__ == "__main__":
     main()
