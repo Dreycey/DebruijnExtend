@@ -126,7 +126,7 @@ class DebruijnExtend():
         OUTPUT: 3-based secondary structure (using CEH, type: string) 
         """
         primary_karray = self.get_kmers(primary_seq, k)
-        curr_loc = os.path.dirname(__file__)
+        curr_loc = os.path.abspath(os.path.dirname(__file__))
         hash_table = pickle.load(open(f"{curr_loc}/prot_hashtables/prothashtable_{k}.p", "rb"))
 
         ###
