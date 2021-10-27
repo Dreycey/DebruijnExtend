@@ -1,7 +1,9 @@
 ![Debruijn Extend](figures/debruijnextend_logo.png)
 
 # DebruijnExtend
-This repository contains the source code for the DebruijnExtend tool. This tool uses known secondary structures for common protein Khmers to predict the most likely secondary structure for a given input primary protein sequence.
+### This repository contains the source code for the DebruijnExtend tool. Overall, this tool predicts the secondary structure of a protein given an input fasta file with protein(s).
+
+DebruijnExtend is a machine learning algorithm that constructs a probability-based de Bruijn graph using kmers of protein secondary structure fragments associated with a given primary sequence. Once created, edge contraction is used to find paths of highest probability to determine the overall predicted secondary structure.
 
 # Installation
 USING CONDA:
