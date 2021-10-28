@@ -16,23 +16,26 @@ Updates (v2; 11/28/2020):
 Updates (v3; 12/07/2020): 
     * Here top matches are given random guesses if no edge
 
-Updates (10/04/2021): 
+Updates (10/27/2021): 
     * refactoring all methods/functions
         * Adding type hinting, imrpoved doc strings
         * getting rid of other "versions"
+
+Updates (10/04/2021): 
+    * allowing for multifasta input
 """
 # std pkgs
 import math
 import pickle
 import sys
 import os
-from typing import Dict, List
+from typing import Dict, List, Union
 import numpy as np
 # non-std pkgs
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
-
+from pathlib import Path
+import random
 
 
 HashTableType = Dict[str, Dict[str, float]]
@@ -75,7 +78,8 @@ class DebruijnExtend():
 
         return kmer_array
 
-    def find_secondary_structs(self, primary_karray: list, hash_table: HashTableType) -> HashTableType:
+    def find_secondary_structs(self, primary_karray: list, 
+                                     hash_table: HashTableType) -> HashTableType:
         """
         This method returns only the relevant hashes from the larger hash table. 
 
@@ -108,7 +112,7 @@ class DebruijnExtend():
                            primary2secondary_kmers: HashTableType, 
                            kmer_size: int = 4, 
                            max_dict_size: int = 100,
-                           prob_cutoff: float = .10) -> Dict[str, float]:
+                           prob_cutoff: float = .50) -> Dict[str, float]:
         """
         The stitch-extend method is the core algorithm in DebruijnExtend. 
 
@@ -236,9 +240,49 @@ def clean_input_sequences(input_seq, kmer_size):
     for aa in input_seq[:kmer_size+1]:
         if aa == "*":
             seq_list.append("G")
+        elif aa == "B":
+            amino_chosen = np.random.choice(["N", "D"], 1, p=[0.5, 0.5])[0]
+        elif aa == "Z":
+            amino_chosen = np.random.choice(["Q", "E"], 1, p=[0.5, 0.5])[0]
+        elif aa == "J":
+            amino_chosen = np.random.choice(["L", "I"], 1, p=[0.5, 0.5])[0]
+        elif aa == "X":
+            amino_chosen = random.choice(["A", "R", "N", "D", "C", 
+                                          "Q", "E", "G", "H", "I", 
+                                          "L", "K", "M", "F", "P", 
+                                          "S", "T", "W", "Y", "V"])[0]
         else:
-            seq_list.append(aa)
+            amino_chosen = aa
+        seq_list.append(amino_chosen)
     return ''.join(seq_list) + input_seq[kmer_size+1:]
+
+def readFasta(fasta_file_path: Union[str, Path]):
+    """
+    This function reads a fasta file
+
+    Parameters
+    ----------
+    fasta file path: string OR Path
+
+    Returns
+    -------
+    proteins : array of protein sequence (ordered)
+    protein_names : array of protein names (ordered)
+    """
+    proteins, protein_names = [], []
+    with open(fasta_file_path) as fasta_file:
+        fasta_file_array = fasta_file.readlines()
+        for line_count, fasta_line in enumerate(fasta_file_array):
+            if (fasta_line[0] == ">"):
+                name = fasta_line.strip("\n")
+                protein_names.append(name)
+                proteins.append(protein_seq) if line_count > 0 else None
+                protein_seq = "" # renew sequence everytime fasta name is added.
+            else: 
+                protein_seq += fasta_line.strip("\n")
+        proteins.append(protein_seq)
+    return proteins, protein_names
+
 
 ###
 # RUN SCRIPT
@@ -248,23 +292,28 @@ def main():
     This function controls the flow of the script.
     """
     # get input ready
-    input_seq_name = open(sys.argv[1]).readlines()[0].strip("\n")
-    input_seq = open(sys.argv[1]).readlines()[1].strip("\n")
+    proteins, protein_names = readFasta(sys.argv[1])
     kmer_size = int(sys.argv[2])
     outputfile = sys.argv[3]
+    # delete output file if exists
+    if os.path.exists(outputfile):
+        os.remove(outputfile)
+    # loop through proteins and predict structure
+    for protein_index, input_seq_name in enumerate(protein_names):
+        input_seq = proteins[protein_index]
 
-    # fix input - add glycine where * occurs
-    input_seq = clean_input_sequences(input_seq, kmer_size)
-    
-    # instantiate the object and run the algorithm
-    new_obj = DebruijnExtend()
-    print(f"input: \n {input_seq},\n k_mer size: {kmer_size}")
-    secondary, prob = new_obj.debruijnextend(input_seq, kmer_size)[0]
-    print(f"k={kmer_size}: {secondary}")
+        # fix input - add glycine where * occurs
+        input_seq = clean_input_sequences(input_seq, kmer_size)
+        
+        # instantiate the object and run the algorithm
+        new_obj = DebruijnExtend()
+        print(f"input: \n {input_seq},\n k_mer size: {kmer_size}")
+        secondary, prob = new_obj.debruijnextend(input_seq, kmer_size)[0]
+        print(f"k={kmer_size}: {secondary}")
 
-    # save the output
-    outfile = open(outputfile, "w")
-    outfile.write(f"{input_seq_name} \n{prob} \n{secondary}")
+        # save the output
+        outfile = open(outputfile, "a")
+        outfile.write(f"{input_seq_name} \n {prob} \n {secondary} \n")
 
 if __name__ == "__main__":
     main()
