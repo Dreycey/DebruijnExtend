@@ -152,6 +152,7 @@ class DebruijnExtend():
         """
         # Initialize with first
         stitchextend_dict = primary2secondary_kmers[primary_seq_kmers[0]].copy()
+        print(stitchextend_dict)
         # LOOP 1: looping through the layers
         for kmer_i in tqdm(range(1,len(primary_seq_kmers))):
             protein_kmer_at_current_layer = primary_seq_kmers[kmer_i]
@@ -237,7 +238,10 @@ def clean_input_sequences(input_seq, kmer_size):
     be compatible with the precomputed hash table. 
     """
     seq_list = []
-    for aa in input_seq[:kmer_size+1]:
+    for aa in input_seq:
+        if aa not in ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]:
+            print(aa)
+       
         if aa == "*":
             seq_list.append("G")
         elif aa == "B":
@@ -313,7 +317,7 @@ def main():
 
         # save the output
         outfile = open(outputfile, "a")
-        outfile.write(f"{input_seq_name} \n {prob} \n {secondary} \n")
+        outfile.write(f"{input_seq_name}\n{prob}\n{secondary}\n")
 
 if __name__ == "__main__":
     main()
