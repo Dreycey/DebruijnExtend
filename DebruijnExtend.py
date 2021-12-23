@@ -28,6 +28,7 @@ import sys
 import os
 from typing import Dict, List
 import numpy as np
+import multiprocessing as mp
 # non-std pkgs
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -100,12 +101,30 @@ class DebruijnExtend():
                 for secondary_kmer, observed_count in hash_table[kmer].items():
                     summ = np.sum([observed_count for observed_count in hash_table[kmer].values()])
                     temp_dict[secondary_kmer] = (-1) * math.log(round(observed_count / summ, 20)) # turn into probalities 
+            else:
+                temp_dict = self.get_close_kmers(hash_table, kmer)
             potential_secondaries[kmer] = temp_dict 
 
+        # pool = mp.Pool(6)
+        # pool.starmap(self.find_secondary, [(kmer, potential_secondaries, hash_table) for kmer in tqdm(primary_karray)])
+        # pool.join()
         return potential_secondaries
 
+    def find_secondary(self, prot_kmer, potential_secondaries, hash_table):
+        """
+        given kmer, find secondary structures. return dict.
+        """
+        temp_dict = {}
+        if prot_kmer in hash_table.keys(): 
+            for secondary_kmer, observed_count in hash_table[prot_kmer].items():
+                summ = np.sum([observed_count for observed_count in hash_table[prot_kmer].values()])
+                temp_dict[secondary_kmer] = (-1) * math.log(round(observed_count / summ, 20)) # turn into probalities 
+        else:
+            temp_dict = self.get_close_kmers(hash_table, prot_kmer)
+        potential_secondaries[prot_kmer] = temp_dict 
+
     def stitchextend(self, primary_seq_kmers: List[str], 
-                           primary2secondary_kmers: HashTableType, 
+                           prot2secondary: HashTableType, 
                            kmer_size: int = 4, 
                            max_dict_size: int = 100,
                            prob_cutoff: float = .10) -> Dict[str, float]:
@@ -147,21 +166,30 @@ class DebruijnExtend():
             with cognate negative log proabilities. 
         """
         # Initialize with first
-        stitchextend_dict = primary2secondary_kmers[primary_seq_kmers[0]].copy()
+        stitchextend_dict = prot2secondary[primary_seq_kmers[0]].copy()
+
         # LOOP 1: looping through the layers
         for kmer_i in tqdm(range(1,len(primary_seq_kmers))):
-            protein_kmer_at_current_layer = primary_seq_kmers[kmer_i]
+            protein_kmer = primary_seq_kmers[kmer_i]
             stitchextend_dict_iplus = {}
-            # LOOP 2: loop through kmers per layer
-            for secondary_kmer_in_layer, secondary_kmer_probability in \
-                                  primary2secondary_kmers[protein_kmer_at_current_layer].items():
+            print(f"stitchextend_dict =  {stitchextend_dict}")
+            # LOOP 2: loop through kmers per layer 
+            if protein_kmer in prot2secondary:
+                print("protein kmer found!")
+                secondary_kmer = prot2secondary[protein_kmer]
+                print(f"OUTPUT: {secondary_kmer}")
+            else:
+                print("finding close kmers")
+                secondary_kmer = self.get_close_kmers(prot2secondary, protein_kmer)
+            print(f"secoondaary structures: {secondary_kmer}")
+            for secondary_k, secondary_prob in secondary_kmer.items():
                 # LOOP 3: loop through extended sequences
                 for extended_sequence, extended_probability in stitchextend_dict.items():
                     end_of_extended_sequence = extended_sequence[-(kmer_size-1):] # last k-1
-                    start_of_kmer = secondary_kmer_in_layer[:-1] # up to k-1
+                    start_of_kmer = secondary_k[:-1] # up to k-1
                     if end_of_extended_sequence == start_of_kmer: # if equal, THEN STITCH AND EXTEND
-                        extended_seq = extended_sequence + secondary_kmer_in_layer[-1]
-                        extended_prob = extended_probability + secondary_kmer_probability
+                        extended_seq = extended_sequence + secondary_k[-1]
+                        extended_prob = extended_probability + secondary_prob
                         stitchextend_dict_iplus[extended_seq] = extended_prob
             # LOOP 2 END: Update the stitch-extend dictionary
             stitchextend_dict = self.apply_heurstics(stitchextend_dict, 
@@ -169,6 +197,36 @@ class DebruijnExtend():
                                                      prob_cutoff, 
                                                      max_dict_size)
         return stitchextend_dict
+
+    def get_close_kmers(self, prot2secondary, protein_kmer, top_N=10):
+        """
+        This method finds kmers that are close and uses the 
+        structures for the top N.
+
+        Output: {"HCHCG", 0.4}
+        """
+        def hamming_dist(k1, k2):
+            val = 0
+            for ind, char in enumerate(k1):
+                if char != k2[ind]: val += 1
+            return val
+
+        output_dict = {}
+        priority_queue = []
+        highest_score = float("inf")
+        print(f"\t finding close seq to {protein_kmer}")
+        for protein_seq, secondary_structs in tqdm(prot2secondary.items()):
+            hamming_score = hamming_dist(protein_seq, protein_kmer)
+            if hamming_score < highest_score:
+                priority_queue.append((hamming_score, secondary_structs))
+                priority_queue.sort(key=lambda a: a[0])
+            if len(priority_queue) > top_N: priority_queue.pop(-1)
+            highest_score = priority_queue[-1][0]
+        print(priority_queue)
+
+        for saved_res in priority_queue:
+            output_dict.update(saved_res[1])
+        return output_dict
 
     def apply_heurstics(self, stitchextend_dict,
                               stitchextend_dict_iplus, 
@@ -185,16 +243,22 @@ class DebruijnExtend():
         Heuristic 2: 
             Only keep the extended sequences with lowest neg log probability (highest probability).
         """
+        print(f"before heuristic: {stitchextend_dict_iplus}")
         # Heuristic 1
         if len(stitchextend_dict_iplus.keys()) < prob_cutoff*max_dict_size:
+            print("OKAY0")
             stitchextend_dict_iplus = {} # empty the hash
             for extended_sequence, extended_probability in stitchextend_dict.items():
+                # extend with all H,C,E
+                print("OKAY1")
                 for nucleo_ext in self.secondary_alphabet:
+                    print("OKAY2")
                     extended_seq = extended_sequence + nucleo_ext
-                    stitchextend_dict_iplus[extended_seq] = extended_probability # adding zero, since -log(1)=0 
+                    stitchextend_dict_iplus[extended_seq] = extended_probability # adding zero, since -log(1)=0
+        print(f"after heuristic: {stitchextend_dict_iplus}")
         # Heuristic 2
         top_probable_seqs_list = sorted(stitchextend_dict_iplus.items(), 
-                                    key=lambda item: item[1])[:max_dict_size]
+                                        key=lambda item: item[1])[:max_dict_size]
         return {k: v for k, v in top_probable_seqs_list}
 
     def debruijnextend(self, primary_seq: str, kmer_size: int) -> List[str]:
