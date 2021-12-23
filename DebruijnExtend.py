@@ -29,14 +29,35 @@ import math
 import pickle
 import sys
 import os
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 import numpy as np
+import itertools
 # non-std pkgs
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from pathlib import Path
 import random
+import argparse
 
+
+
+def parseArgs(argv=None) -> argparse.Namespace:
+    """
+    This method takes in the arguments from the command and performs
+    parsing.
+    INPUT: 
+        Array of input arguments
+    OUTPUT:
+        returns a argparse.Namespace object
+    """
+    parser = argparse.ArgumentParser(description=__doc__)
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("-i", "--input", help="the input fasta file", required=True)
+    parser.add_argument("-ht", "--hash_table", help="the input hash table (python pickle file)", required=True)
+    parser.add_argument("-o", "--output_file", help="the output file prefix", required=True)
+    parser.add_argument("-t", "--threads", help="number of threads", required=False)
+    return parser.parse_args(argv)
 
 HashTableType = Dict[str, Dict[str, float]]
 
@@ -55,7 +76,7 @@ class DebruijnExtend():
         self.seq_name = ""
         self.sequence = ""
         self.secondary = ""
-        self.secondary_alphabet = ["C","E","H"]
+        self.secondary_alphabet = ["E","H","C"]
 
     def get_kmers(self, primary_prot_seq: str, kmer_length: int) -> List[str]:
         """
@@ -102,6 +123,7 @@ class DebruijnExtend():
             temp_dict = {}
             if kmer in hash_table.keys(): 
                 for secondary_kmer, observed_count in hash_table[kmer].items():
+                    #print(secondary_kmer, observed_count)
                     summ = np.sum([observed_count for observed_count in hash_table[kmer].values()])
                     temp_dict[secondary_kmer] = (-1) * math.log(round(observed_count / summ, 20)) # turn into probalities 
             potential_secondaries[kmer] = temp_dict 
@@ -112,7 +134,7 @@ class DebruijnExtend():
                            primary2secondary_kmers: HashTableType, 
                            kmer_size: int = 4, 
                            max_dict_size: int = 100,
-                           prob_cutoff: float = .50) -> Dict[str, float]:
+                           prob_cutoff: float = .70) -> Dict[str, float]:
         """
         The stitch-extend method is the core algorithm in DebruijnExtend. 
 
@@ -151,7 +173,7 @@ class DebruijnExtend():
             with cognate negative log proabilities. 
         """
         # Initialize with first
-        stitchextend_dict = primary2secondary_kmers[primary_seq_kmers[0]].copy()
+        stitchextend_dict = self.get_fist_struct(primary2secondary_kmers, primary_seq_kmers)
         print(stitchextend_dict)
         # LOOP 1: looping through the layers
         for kmer_i in tqdm(range(1,len(primary_seq_kmers))):
@@ -159,7 +181,7 @@ class DebruijnExtend():
             stitchextend_dict_iplus = {}
             # LOOP 2: loop through kmers per layer
             for secondary_kmer_in_layer, secondary_kmer_probability in \
-                                  primary2secondary_kmers[protein_kmer_at_current_layer].items():
+                        primary2secondary_kmers[protein_kmer_at_current_layer].items():
                 # LOOP 3: loop through extended sequences
                 for extended_sequence, extended_probability in stitchextend_dict.items():
                     end_of_extended_sequence = extended_sequence[-(kmer_size-1):] # last k-1
@@ -174,6 +196,33 @@ class DebruijnExtend():
                                                      prob_cutoff, 
                                                      max_dict_size)
         return stitchextend_dict
+
+    def get_fist_struct(self, primary2secondary_kmers, primary_seq_kmers):
+        """
+        This method finds the fist sequence to start extending from.
+        """
+        first_struct = {}
+        skip_count = 0
+        for kmer in primary_seq_kmers:
+            struct = primary2secondary_kmers[kmer].copy()
+            print(f"struct: {struct}")
+            print(len(struct.keys()))
+            if len(struct) == 0:
+                print("EMPTY")
+                skip_count += 1
+            else:
+                # continue
+                # alphabet = ["H", "E", "C"]
+                # print(f"FOUND: {struct}")
+                for comb in itertools.combinations(self.secondary_alphabet, skip_count):
+                    prepend_seq = ''.join(comb)
+                    print(f" prepend seq: {prepend_seq}")
+                    for ss3, prob in struct.items():
+                        new_seq = prepend_seq+ss3
+                        k = len(ss3)
+                        first_struct[new_seq[:k]] = prob
+                break
+        return first_struct
 
     def apply_heurstics(self, stitchextend_dict,
                               stitchextend_dict_iplus, 
@@ -192,17 +241,22 @@ class DebruijnExtend():
         """
         # Heuristic 1
         if len(stitchextend_dict_iplus.keys()) < prob_cutoff*max_dict_size:
-            stitchextend_dict_iplus = {} # empty the hash
+            #stitchextend_dict_iplus = {} # empty the hash
             for extended_sequence, extended_probability in stitchextend_dict.items():
                 for nucleo_ext in self.secondary_alphabet:
+                    #print(nucleo_ext)
                     extended_seq = extended_sequence + nucleo_ext
-                    stitchextend_dict_iplus[extended_seq] = extended_probability # adding zero, since -log(1)=0 
+                    stitchextend_dict_iplus[extended_seq] = extended_probability + 100 # adding zero, since -log(1)=0 
+        #print(stitchextend_dict_iplus)
+
         # Heuristic 2
         top_probable_seqs_list = sorted(stitchextend_dict_iplus.items(), 
-                                    key=lambda item: item[1])[:max_dict_size]
+                                        key=lambda item: item[1])[:max_dict_size]
         return {k: v for k, v in top_probable_seqs_list}
 
-    def debruijnextend(self, primary_seq: str, kmer_size: int) -> List[str]:
+    def debruijnextend(self, primary_seq: str, 
+                             kmer_size: int, 
+                             hash_table_path: Optional[Path]) -> List[str]:
         """
         This method takes in a primary protein sequence annd returns the
         secondary structure predicted with the highest probability.
@@ -218,7 +272,7 @@ class DebruijnExtend():
         """
         primary_karray = self.get_kmers(primary_seq, kmer_size)
         curr_loc = os.path.abspath(os.path.dirname(__file__))
-        hash_table = pickle.load(open(f"{curr_loc}/prot_hashtables/prothashtable_{kmer_size}.p", "rb"))
+        hash_table = pickle.load(open(hash_table_path, "rb"))
 
         print(f"STEP 1: Hashing Method. Find corresponding secondary structures: \n")
         potential_secondaries = self.find_secondary_structs(primary_karray, hash_table)
@@ -232,7 +286,7 @@ class DebruijnExtend():
 
         return out_array
 
-def clean_input_sequences(input_seq, kmer_size):
+def clean_input_sequences(input_seq):
     """
     This method cleans all input sequences to ensure they will
     be compatible with the precomputed hash table. 
@@ -243,7 +297,7 @@ def clean_input_sequences(input_seq, kmer_size):
             print(aa)
        
         if aa == "*":
-            seq_list.append("G")
+            amino_chosen = "G"
         elif aa == "B":
             amino_chosen = np.random.choice(["N", "D"], 1, p=[0.5, 0.5])[0]
         elif aa == "Z":
@@ -258,7 +312,7 @@ def clean_input_sequences(input_seq, kmer_size):
         else:
             amino_chosen = aa
         seq_list.append(amino_chosen)
-    return ''.join(seq_list) + input_seq[kmer_size+1:]
+    return ''.join(seq_list) #+ input_seq[kmer_size+1:]
 
 def readFasta(fasta_file_path: Union[str, Path]):
     """
@@ -287,6 +341,15 @@ def readFasta(fasta_file_path: Union[str, Path]):
         proteins.append(protein_seq)
     return proteins, protein_names
 
+def get_kmer_size(hash_table) -> int:
+    """
+    This function extracts the kmer size from 
+    the hash table.
+    """
+    kmer_size = 0
+    hash = pickle.load(open(hash_table, "rb"))
+    kmer_size = len(list(hash.keys())[0])
+    return kmer_size
 
 ###
 # RUN SCRIPT
@@ -295,24 +358,27 @@ def main():
     """
     This function controls the flow of the script.
     """
+    args = parseArgs(sys.argv[1:])
     # get input ready
-    proteins, protein_names = readFasta(sys.argv[1])
-    kmer_size = int(sys.argv[2])
-    outputfile = sys.argv[3]
+    proteins, protein_names = readFasta(args.input)
+    hash_table = Path(args.hash_table)
+    outputfile = Path(args.output_file)
     # delete output file if exists
     if os.path.exists(outputfile):
         os.remove(outputfile)
+    # obtain kmer size from hash table
+    kmer_size = get_kmer_size(hash_table)
     # loop through proteins and predict structure
     for protein_index, input_seq_name in enumerate(protein_names):
         input_seq = proteins[protein_index]
 
         # fix input - add glycine where * occurs
-        input_seq = clean_input_sequences(input_seq, kmer_size)
+        input_seq = clean_input_sequences(input_seq)
         
         # instantiate the object and run the algorithm
         new_obj = DebruijnExtend()
-        print(f"input: \n {input_seq},\n k_mer size: {kmer_size}")
-        secondary, prob = new_obj.debruijnextend(input_seq, kmer_size)[0]
+        print(f"input: \n{input_seq},\n k_mer size: {kmer_size}")
+        secondary, prob = new_obj.debruijnextend(input_seq, kmer_size, hash_table)[0]
         print(f"k={kmer_size}: {secondary}")
 
         # save the output
