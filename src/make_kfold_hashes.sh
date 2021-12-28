@@ -1,6 +1,13 @@
 #!/bin/bash
 
 ####
+# TODO:
+#     1. fix paths
+#     2. make sure that the csv's used as input have been grouped
+#
+####
+
+####
 # This script is creates pickled dictionaries/hash tables for k-mers
 # of sizes 3 to 31.
 ####
@@ -16,9 +23,9 @@
 #   tables of multiple sizes
 #######################################
 function make_hash_tables() {
-    for k in {3..31}; do
-        echo "python csvtohash.py $1 ${2}_${k}.p ${k}";
-        python csvtohash.py $1 ${2}_${k}.p ${k}; 
+    for k in {3..5}; do
+        echo "python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}";
+        python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}; 
     done
 };
 
@@ -32,6 +39,9 @@ function make_hash_tables() {
 function main() {
     # STEP 1: make the hash tables for each kmer size
     echo; echo "Now constructing hash tables.."; echo; echo;
-    make_hash_tables "secondarystructure_COMP533.csv" "prothashtable"
+    for csv_file in kfold_testandtrain/*train*;
+    do
+        make_hash_tables $csv_file ${csv_file%".csv"}_"prothash";
+    done
 }
 main;

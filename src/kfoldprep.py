@@ -1,9 +1,4 @@
 #! usr/bin/python3
-# std pkgs
-import sys
-import pandas as pd
-import random
-
 """
 This script chunks the input CSV into different chunks for testing and training
 depending upon the input k parameter.
@@ -11,9 +6,21 @@ depending upon the input k parameter.
 USAGE:
    python kfoldprep.py <input CSV> <outfile pref> <k folds>
 EXAMPLE:
-python kfoldprep.py data/secondarystructure_COMP533.csv outfile_prefix 10
+    python kfoldprep.py data/secondarystructure_COMP533.csv outfile_prefix 10
+
+TODO: 
+    This is one of the more critical files. An update here will be making sure 
+    to cluster proteins that have high sequence similiarity and impliment
+    Leave One Group Out Cross Validation. 
 """
-                                                                            
+# std pkgs
+import sys
+import pandas as pd
+import random
+
+
+
+                                                                           
 def split_csv(csv_path, outprefix, k_folds):
     """                                                                     
     This method parses an input csv and send the information into           

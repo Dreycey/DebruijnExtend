@@ -16,9 +16,9 @@
 #   tables of multiple sizes
 #######################################
 function make_hash_tables() {
-    for k in {3..5}; do
-        echo "python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}";
-        python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}; 
+    for k in {3..31}; do
+        echo "python csvtohash.py $1 ${2}_${k}.p ${k}";
+        python csvtohash.py $1 ${2}_${k}.p ${k}; 
     done
 };
 
@@ -32,9 +32,6 @@ function make_hash_tables() {
 function main() {
     # STEP 1: make the hash tables for each kmer size
     echo; echo "Now constructing hash tables.."; echo; echo;
-    for csv_file in kfold_testandtrain/*train*;
-    do
-        make_hash_tables $csv_file ${csv_file%".csv"}_"prothash"
-    done
+    make_hash_tables "../data/secondarystructure_COMP533.csv" "prothashtable"
 }
 main;

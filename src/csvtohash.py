@@ -20,7 +20,7 @@ import sys
 import pandas as pd
 from tqdm import tqdm
 import pickle
-
+from pathlib import Path
 
 
 
@@ -34,13 +34,13 @@ class ProteinHash:
     """
     
     def __init__(self, csv_in, kmer_size):
-        self.csv_file: str = csv_in
+        self.csv_file: Path = Path(csv_in)
         self.prothash = None # must construct on initialization
         self.k_mersize = kmer_size 
         self.sequence_column = 2
-        self.structure_column = 4
+        self.structure_column = 3
         
-    def parse_csv(self, delimitor: str=",") -> pd.DataFrame:
+    def parse_csv(self, csv_file=None, delimitor: str=",") -> pd.DataFrame:
         """
         This method parses an input csv and places the sequences
         and corresponding secondary structures into a pnadas dataframe.
@@ -56,15 +56,17 @@ class ProteinHash:
             Returns a dataframe connecting primary sequences with the 
             corresponding secondary structure.
         """
-        with open(self.csv_file) as opened_file:
+        if csv_file == None:
+            csv_file = self.csv_file
+        with open(csv_file) as opened_file:
             file_by_lines = opened_file.readlines()
             # construct the sequence and structure vectors from csv
             sequence_vector = []
             structure_vector = []
             for csv_row in file_by_lines:
-                csv_row = csv_row.split(delimitor)
-                sequence_vector.append(csv_row[self.sequence_column])
-                structure_vector.append(csv_row[self.structure_column])
+                csv_row_list = csv_row.strip("\n").split(delimitor)
+                sequence_vector.append(csv_row_list[self.sequence_column])
+                structure_vector.append(csv_row_list[self.structure_column])
             # add sequences and structures to a pandas dataframe
             df = {'sequence': sequence_vector, 'structure': structure_vector}
             structseq_dataframe = pd.DataFrame(data=df)
@@ -90,6 +92,7 @@ class ProteinHash:
         """
         prothash = {}
         protein_df = self.parse_csv()
+        print("WORKING")
         # make the hash table
         for kmer_start_position, row in tqdm(protein_df.iterrows()):
             primary_sequence, secondary_structure = row[seq_column_name], row[struct_column_name]
@@ -136,9 +139,9 @@ class ProteinHash:
 
 def main():
     # defining the input arguments
-    csvfile = sys.argv[1]
-    outpickle_name = sys.argv[2] 
-    kmer_size = int(sys.argv[3])
+    csvfile = "/Users/dreyceyalbin/Dropbox/Fall2020-classes/Algorithms/project/DebruijnExtend/py_scripts/training_1.csv"; #sys.argv[1]
+    outpickle_name = "out" #sys.argv[2] 
+    kmer_size = 4 # int(sys.argv[3])
     # construct the hash table
     prothashOBJ = ProteinHash(csvfile, kmer_size)
     prothashtable = prothashOBJ.construct_hash()
