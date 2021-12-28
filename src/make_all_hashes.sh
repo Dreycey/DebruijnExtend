@@ -32,6 +32,6 @@ function make_hash_tables() {
 function main() {
     # STEP 1: make the hash tables for each kmer size
     echo; echo "Now constructing hash tables.."; echo; echo;
-    make_hash_tables "../data/secondarystructure_COMP533.csv" "prothashtable"
+    make_hash_tables "../data/primary2secondary.csv" "prothashtable"
 }
 main;

@@ -24,7 +24,7 @@
 #######################################
 function make_hash_tables() {
     for k in {3..5}; do
-        echo "python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}";
+        echo "python csvtohash.py $1 ${2}_${k}.p ${k}";
         python py_scripts/csvtohash.py $1 ${2}_${k}.p ${k}; 
     done
 };
