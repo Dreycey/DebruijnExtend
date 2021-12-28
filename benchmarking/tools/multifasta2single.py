@@ -41,7 +41,7 @@ def addSeqsToFiles(output_directory, seq_names, sequences, suffix=".fa"):
     DESCRIPTION: takes sequence names, sequences, and add to output directory
     """
     for seq_index, sequence_name in tqdm(enumerate(seq_names)):
-        full_path = Path(output_directory) / Path(str(seq_index))
+        full_path = Path(output_directory) / Path(str(sequence_name))
         with open(full_path.with_suffix(suffix), "w") as fasta_out:
             fasta_out.write(">"+sequence_name + "\n" + sequences[seq_index] + "\n")
 
