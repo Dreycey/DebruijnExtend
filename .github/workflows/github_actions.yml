@@ -15,6 +15,9 @@ jobs:
       - name: PWD
         shell: bash -l {0}
         run: pwd;
+      - name: PWD
+        shell: bash -l {0}
+        run: ls *;
       - name: check (before)
         shell: bash -l {0}
         run: ls $CONDA/envs/;
@@ -24,15 +27,16 @@ jobs:
           environment-file: DebruijnExtend_environment.yaml
           activate-environment: DebruijnExtend
           auto-activate-base: false 
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: DebruijnExtend
-      - name: check (after)
+      # - uses: conda-incubator/setup-miniconda@v2
+      #   with:
+      #     activate-environment: DebruijnExtend
+      - name: conda env
+        run: $CONDA/bin/conda activate DebriujnExtend;
+      - name: conda env
         run: ls $CONDA/envs/;
              conda info --envs;
       - name: check (after)
-        run: ls $CONDA/envs/DebruijnExtend/;
-             ls $CONDA/envs/DebruijnExtend/bin/;
+        run: ls $CONDA/envs/DebruijnExtend/*;
       # - name: create environment
       #   shell: bash -l {0}
       #   run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
