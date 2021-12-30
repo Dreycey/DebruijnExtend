@@ -19,4 +19,4 @@ jobs:
           activate-environment: DebruijnExtend
       - name: run unit tests
         shell: bash -l {0}
-        run: python -m unittest src/tests/test_DebruijnExtend.py  
+        run: python3 -m unittest src/tests/test_DebruijnExtend.py  
