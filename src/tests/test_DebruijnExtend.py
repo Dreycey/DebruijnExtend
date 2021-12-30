@@ -18,8 +18,8 @@ from src.debruijnextend.utils import readFasta, get_kmer_size, clean_input_seque
 
 
 # globals
-cluster_pickle: Path = './cluster_file.pickle'
-hash_table_path: Path = './prot_hashtables/prothashtable_10.p'
+cluster_pickle: Path = './DefaultData/cluster_file.pickle'
+hash_table_path: Path = './DefaultData/prothashtable_10.p'
 test_seq_1: Path = './examples/gfp.fasta'
 truth = 'CCCHHHHHCCEEEEEEEEEEEECCEEEEEEEEEEEECCCCEEEEEEEECCCCCCCCHHHHCCCCCCHHHCECCHHHHHHCHHHHCCCCCEEEEEEEEECCCCEEEEEEEEEEECCEEEEEEEEEEECCCCCCCCCCCCECCCCCCEEEEEEEEHHHCEEEEEEEEEEEECCCCEEEEEEEEEEEECCCCCCCCCCCEEEEEEEEEECCCCCCCCEEEEEEEEEEECCCCCCCCCCCCC'
 HashTableType = Dict[str, Dict[str, float]]
@@ -38,7 +38,7 @@ class Test_DebruijnExtend(unittest.TestCase):
     def tearDown(self) -> None:
     #     pass
         return 0
-        
+
     def test_get_fist_struct(self):
         """
         Test Def: 
