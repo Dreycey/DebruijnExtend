@@ -9,8 +9,8 @@ jobs:
       #   uses: actions/setup-python@v2
       #   with:
       #     python-version: 3.8
-      - name: check'
-        run: ls $CONDA/
+      - name: check (before)
+        run: ls $CONDA/envs/
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: DebruijnExtend_environment.yaml
@@ -19,6 +19,9 @@ jobs:
       - uses: conda-incubator/setup-miniconda@v2
         with:
           activate-environment: DebruijnExtend
+      - name: check (before)
+        run: ls $CONDA/envs/
+             conda info --envs
       # - name: create environment
       #   shell: bash -l {0}
       #   run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
