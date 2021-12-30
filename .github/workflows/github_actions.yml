@@ -24,7 +24,7 @@ jobs:
              ls $CONDA;
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: DebruijnExtend_environment.yaml
+          environment-file: environment.yaml
           activate-environment: DebruijnExtend
           auto-activate-base: false 
       # - uses: conda-incubator/setup-miniconda@v2
@@ -41,6 +41,9 @@ jobs:
       #   shell: bash -l {0}
       #   run: ls $CONDA/envs/;
       #        conda info --envs;
+      - name: download default files
+        shell: bash -l {0}
+        run: gdown --folder --id 1VJKvfBaNFQj0zXCwKDTKcBzkgRT26bz-;
       - name: check (after)
         shell: bash -l {0}
         run: ls $CONDA/envs/DebruijnExtend/*;
