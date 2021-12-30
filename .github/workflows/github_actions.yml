@@ -31,11 +31,18 @@ jobs:
       #   with:
       #     activate-environment: DebruijnExtend
       - name: conda env
+        shell: bash -l {0}
+        run: ls $CONDA/envs/;
+             conda info --envs;
+      - name: conda env
+        shell: bash -l {0}
         run: $CONDA/bin/conda activate DebriujnExtend;
       - name: conda env
+        shell: bash -l {0}
         run: ls $CONDA/envs/;
              conda info --envs;
       - name: check (after)
+        shell: bash -l {0}
         run: ls $CONDA/envs/DebruijnExtend/*;
       # - name: create environment
       #   shell: bash -l {0}
