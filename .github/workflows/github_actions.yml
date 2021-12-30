@@ -1,25 +1,22 @@
 name: debext-cdci-actions
 on: [push]
+
 jobs:
   basic-testing:
     runs-on: "macos-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["macos-latest"]
     steps:
-    #   - name: Set up Python 3.8                               
-    #     uses: actions/setup-python@v2                               
-    #     with:                                 
-    #       python-version: '3.8'    
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniconda-version: "latest"
           environment-file: DebruijnExtend_environment.yaml
           activate-environment: DebruinExtend
-          python-version: 3.5
           auto-activate-base: false
-      - run: |
-          conda info
-          conda list
       - uses: conda-incubator/setup-miniconda@v2
+        shell: bash -l {0}
         with:
           activate-environment: DebruijnExtend
       - name: run unit tests
