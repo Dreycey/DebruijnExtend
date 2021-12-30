@@ -1,1 +1,0 @@
-from csvtohash import ProteinHash
