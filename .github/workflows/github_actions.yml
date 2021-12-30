@@ -1,0 +1,16 @@
+name: debext-cdci-actions
+on: [push]
+jobs:
+  basic-testing:
+    runs-on: mac-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: set up conda env
+        run:
+          $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml
+      - name: run unit tests
+        run: python -m unittest src/tests/test_DebruijnExtend.py  
