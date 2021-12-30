@@ -10,6 +10,6 @@ jobs:
         with:
           python-version: 3.8
       - name: activate env
-        run: $CONDA/bin/conda env create -f DebruijnExtend_environment.yaml
+        run: $CONDA/bin/conda env create -f DebruijnExtend_environment.yaml -name base
       - name: run unit tests
         run: python -m unittest src/tests/test_DebruijnExtend.py  
