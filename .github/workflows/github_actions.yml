@@ -34,13 +34,13 @@ jobs:
         shell: bash -l {0}
         run: ls $CONDA/envs/;
              conda info --envs;
-      - name: conda env
-        shell: bash -l {0}
-        run: $CONDA/bin/conda activate DebriujnExtend;
-      - name: conda env
-        shell: bash -l {0}
-        run: ls $CONDA/envs/;
-             conda info --envs;
+      # - name: conda env
+      #   shell: bash -l {0}
+      #   run: $CONDA/bin/conda activate DebriujnExtend;
+      # - name: conda env
+      #   shell: bash -l {0}
+      #   run: ls $CONDA/envs/;
+      #        conda info --envs;
       - name: check (after)
         shell: bash -l {0}
         run: ls $CONDA/envs/DebruijnExtend/*;
@@ -49,4 +49,4 @@ jobs:
       #   run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
       - name: run unit tests
         shell: bash -l {0}
-        run: $CONDA/envs/DebruijnExtend/bin/python3 -m unittest src/tests/test_DebruijnExtend.py  
+        run: python3 -m unittest src/tests/test_DebruijnExtend.py  
