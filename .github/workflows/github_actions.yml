@@ -9,9 +9,9 @@ jobs:
       #   uses: actions/setup-python@v2
       #   with:
       #     python-version: 3.8
-      - name: TREE
-        shell: bash -l {0}
-        run: tree;
+      # - name: TREE
+      #   shell: bash -l {0}
+      #   run: tree;
       - name: PWD
         shell: bash -l {0}
         run: pwd;
