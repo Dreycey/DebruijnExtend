@@ -18,6 +18,7 @@ jobs:
       #   with:
       #     activate-environment: DebruijnExtend
       - name:
+        shell: bash -l {0}
         run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
       - name: run unit tests
         shell: bash -l {0}
