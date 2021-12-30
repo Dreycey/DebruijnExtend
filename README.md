@@ -1,3 +1,6 @@
+
+![example workflow](https://github.com/Dreycey/DebruijnExtend/actions/workflows/github_actions.yml/badge.svg)
+
 ![Debruijn Extend](figures/debruijnextend_logo.png)
 
 # DebruijnExtend
