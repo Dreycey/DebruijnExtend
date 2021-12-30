@@ -4,11 +4,11 @@ jobs:
   basic-testing:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
+#      - uses: actions/checkout@v2
+#      - name: set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.8
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: DebruijnExtend_environment.yaml
