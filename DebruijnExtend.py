@@ -39,9 +39,9 @@ import os
 import random
 import argparse
 # in-house packages
-from src.KmerCluster import KmerCluster
-from src.DebruijnExtend import DebruijnExtend, HashTableType
-from src.utils import readFasta, get_kmer_size, clean_input_sequences
+from src.debruijnextend.KmerCluster import KmerCluster
+from src.debruijnextend.DebruijnExtend import DebruijnExtend, HashTableType
+from src.debruijnextend.utils import readFasta, get_kmer_size, clean_input_sequences
 
 
 
