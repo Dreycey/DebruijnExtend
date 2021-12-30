@@ -4,10 +4,10 @@ jobs:
   basic-testing:
     runs-on: "macos-latest"
     steps:
-      - name: Set up Python 3.8                               
-        uses: actions/setup-python@v2                               
-        with:                                 
-          python-version: '3.8'    
+    #   - name: Set up Python 3.8                               
+    #     uses: actions/setup-python@v2                               
+    #     with:                                 
+    #       python-version: '3.8'    
       - name: Build Conda Environment
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -19,9 +19,9 @@ jobs:
       - run: |
           conda info
           conda list
-      # - uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     activate-environment: DebruijnExtend
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: DebruijnExtend
       - name: run unit tests
         shell: bash -l {0}
         run: python3 -m unittest src/tests/test_DebruijnExtend.py  
