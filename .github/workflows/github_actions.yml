@@ -10,11 +10,13 @@ jobs:
       #   with:
       #     python-version: 3.8
       - name: check (before)
+        shell: bash -l {0}
         run: ls $CONDA/envs/
+             ls $CONDA
       - uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: DebruijnExtend_environment.yaml
-          activate-environment: DebruinExtend
+          activate-environment: DebruijnExtend
           auto-activate-base: false 
       - uses: conda-incubator/setup-miniconda@v2
         with:
