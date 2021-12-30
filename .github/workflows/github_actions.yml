@@ -15,7 +15,6 @@ jobs:
           activate-environment: DebruinExtend
           auto-activate-base: false 
       - uses: conda-incubator/setup-miniconda@v2
-        shell: bash -l {0}
         with:
           activate-environment: DebruijnExtend
       - name: run unit tests
