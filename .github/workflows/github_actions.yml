@@ -9,17 +9,17 @@ jobs:
       #   uses: actions/setup-python@v2
       #   with:
       #     python-version: 3.8
-      # - uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     environment-file: DebruijnExtend_environment.yaml
-      #     activate-environment: DebruinExtend
-      #     auto-activate-base: false 
-      # - uses: conda-incubator/setup-miniconda@v2
-      #   with:
-      #     activate-environment: DebruijnExtend
-      - name:
-        shell: bash -l {0}
-        run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: DebruijnExtend_environment.yaml
+          activate-environment: DebruinExtend
+          auto-activate-base: false 
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: DebruijnExtend
+      # - name: create environment
+      #   shell: bash -l {0}
+      #   run: $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
       - name: run unit tests
         shell: bash -l {0}
         run: $CONDA/envs/DebruijnExtend/bin/python3 -m unittest src/tests/test_DebruijnExtend.py  
