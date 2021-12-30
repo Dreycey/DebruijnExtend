@@ -2,7 +2,7 @@ name: debext-cdci-actions
 on: [push]
 jobs:
   basic-testing:
-    runs-on: mac-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: set up Python
