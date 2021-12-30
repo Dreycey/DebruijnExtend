@@ -14,9 +14,7 @@ jobs:
           environment-file: DebruijnExtend_environment.yaml
           activate-environment: DebruinExtend
           auto-activate-base: false
-#      - name: activate env
-#        run: conda init bash;
-#             conda activate base; 
-            #$CONDA/bin/conda env update --file DebruijnExtend_environment.yaml --name base
+      - name: activate env
+        run: conda activate DebruinExtend;
       - name: run unit tests
         run: python -m unittest src/tests/test_DebruijnExtend.py  
