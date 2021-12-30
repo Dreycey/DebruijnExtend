@@ -11,17 +11,23 @@ DebruijnExtend is a machine learning algorithm that constructs a probability-bas
 # Installation
 USING CONDA:
 ```
-conda env create -f DebruijnExtend_environment.yaml
+conda env create -f environment.yml
+```
+
+# Download Defualt files
+Using a tool, `gdown`, to retrieve the files.
+```
+gdown --folder --id 1VJKvfBaNFQj0zXCwKDTKcBzkgRT26bz-
 ```
 
 # How to use this tool
 USAGE:
 ```                                                                           
-python DebruijnExtend.py <input fasta> <kmer size> <output file>    
+python DebruijnExtend.py <input fasta> <kmer hash table> <output file>    
 ```
 
 EXAMPLE:                                                                        
 ```
-python DebruijnExtend.py examples/gfp.fasta 4 gfp.ss3
+python DebruijnExtend.py examples/gfp.fasta DefaultData/prothashtable_10.p gfp.ss3
 ```
 
