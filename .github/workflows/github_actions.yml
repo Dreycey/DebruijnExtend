@@ -10,7 +10,9 @@ jobs:
         with:
           python-version: 3.8
       - name: set up conda env
-        run:
-          $CONDA/bin/conda env update --file DebruijnExtend_environment.yaml
+        uses: conda-incubator/setup-miniconda@v2
+          with:
+            miniconda-version: "latest"
+        run: conda env create -f DebruijnExtend_environment.yaml
       - name: run unit tests
         run: python -m unittest src/tests/test_DebruijnExtend.py  
