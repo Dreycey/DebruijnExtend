@@ -1,5 +1,8 @@
 name: debext-cdci-actions
-on: [push]
+on: 
+  pull_request:
+    branches:
+      - main
 jobs:
   basic-testing:
     runs-on: macos-latest
