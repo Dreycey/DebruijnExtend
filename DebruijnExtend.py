@@ -67,15 +67,18 @@ def main():
     """
     global new_obj, outputfile
     args = parseArgs(sys.argv[1:])
+
     # get input ready
     proteins, protein_names = readFasta(args.input)
     outputfile = Path(args.output_file)
     current_dir_path = Path(os.path.realpath(__file__)).parent
+
     # updating CSV data file to use:
     if args.csv_data_path:
         data_path = Path(args.csv_data_path)
     else:
         data_path = current_dir_path / Path('data/TRAINING.csv')
+
     # create default hash if it doesn't exists, report error if path doesn't exist
     if args.hash_table.isdigit():
         # setting up paths and default hash table file naming
@@ -93,6 +96,7 @@ def main():
         hash_table = Path(new_hashtable_pickle)
     else:
         hash_table = Path(args.hash_table)
+
     # obtain kmer size from hash table
     kmer_size = get_kmer_size(hash_table)
     # get protein clusters
@@ -107,6 +111,7 @@ def main():
             kmer_clust = KmerCluster.init_struct(hash_table, new_cluster_pickle, cut_off)
         else:
             kmer_clust = KmerCluster.init_struct(hash_table, args.use_clusters)
+
     # delete output file if exists
     if os.path.exists(outputfile):
         os.remove(outputfile)
@@ -118,10 +123,12 @@ def main():
         new_obj = DebruijnExtend()
 
     # get input ready
-    ARGS = [(clean_input_sequences(proteins[protein_index]), input_seq_name, kmer_size, hash_table, new_obj) \
-                for protein_index, input_seq_name in enumerate(protein_names)]
+    ARGS = []
+    for protein_index, input_seq_name in enumerate(protein_names):
+        cleaned_protein = clean_input_sequences(proteins[protein_index])
+        ARGS.append((cleaned_protein, input_seq_name, kmer_size, hash_table, new_obj))
 
-    # run DebruijnExtend in Parralel
+    # run DebruijnExtend in Parrallel
     if args.threads:
         threads = int(args.threads) if (1 <= int(args.threads)) else 1
         print(f"running with {int(threads)} threads")
@@ -130,13 +137,15 @@ def main():
         pool.close()
         pool.join()
     else: # loop through proteins and predict structure
+        results = []
         for input_args in ARGS:        
-            run_debruijnExtend(*input_args)
+            results.append(run_debruijnExtend(*input_args))
 
     # save the output
     for secondary, prob, input_seq_name in results:
         outfile = open(outputfile, "a")
         outfile.write(f"{input_seq_name}\n{prob}\n{secondary}\n")
         outfile.close()
+
 if __name__ == "__main__":
     main()
