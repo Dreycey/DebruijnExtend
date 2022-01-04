@@ -11,7 +11,6 @@ dependencies:
   - aiohttp=3.8.1
   - aiosignal=1.2.0
   - anyio=3.3.2
-  - appnope=0.1.2
   - argon2-cffi=20.1.0
   - astor=0.8.1
   - astunparse=1.6.3
@@ -97,8 +96,6 @@ dependencies:
   - libedit=3.1.20191231
   - libev=4.33
   - libffi=3.4.2
-  - libgfortran=5.0.0
-  - libgfortran5=9.3.0
   - liblapack=3.9.0
   - liblapacke=3.9.0
   - libllvm11=11.1.0
