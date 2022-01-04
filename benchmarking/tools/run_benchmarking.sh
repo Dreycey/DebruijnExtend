@@ -23,11 +23,17 @@ function run_debext() {
     local debext_path=$1 # ../../DebruijnExtend.py
     local tool_directory=$2
     local kmer_size=$3
+    local cluster_file=$4
     cd ${tool_directory}
     for fasta_file in ./*; do
         echo ${fasta_file};
         if [[ ! -f ${fasta_file%.fna}.ss3 ]]; then
-            python3 ${debext_path} ${fasta_file} ${kmer_size} ${fasta_file%.fna}.ss3 
+            (time \
+            python3 ${debext_path} -i ${fasta_file} \
+                                   -ht ${kmer_size} \
+                                   -o ${fasta_file%.fna}.ss3 \
+                                   --use_clusters ${cluster_file} \
+            ) 2> ${fasta_file%.fna}_time.txt 
         fi
     done
     cd ../;
@@ -41,7 +47,9 @@ function run_s4pred() {
     for fasta_file in ./*; do
         echo ${fasta_file};
         if [[ ! -f ${fasta_file%.fna}.ss3 ]]; then
-            python ${s4pred_runmodel} --outfmt fas ${fasta_file} > ${fasta_file%.fna}.ss3
+            (time \
+                python ${s4pred_runmodel} --outfmt fas ${fasta_file} > ${fasta_file%.fna}.ss3
+            ) 2> ${fasta_file%.fna}_time.txt 
         fi
     done
     cd ../;
@@ -56,7 +64,9 @@ function run_spider2() {
         echo ${fasta_file};
         echo bash $run_local_path ${fasta_file}; 
         if [[ ! -f ${fasta_file%.seq}.spd3 ]]; then
-            bash $run_local_path ${fasta_file};
+            (time \
+                bash $run_local_path ${fasta_file};
+            ) 2> ${fasta_file%.seq}_time.txt 
         fi
     done
     cd ../;
@@ -70,7 +80,9 @@ function run_porter5() {
     cd ${tool_directory}
     for fasta_file in ./*; do
         if [[ ! -f ${fasta_file%.fna}.ss3 ]]; then
-            python ${porter5_path} -i ${fasta_file} --fast --cpu ${threads};
+            (time \
+                python ${porter5_path} -i ${fasta_file} --fast --cpu ${threads};
+            ) 2> ${fasta_file%.fna}_time.txt 
         fi
     done
     cd ../;
@@ -106,7 +118,7 @@ function main() {
     make_fastarepo ${multifasta_testing} debext_${directory_suffix}/ .fna
     # use multifasta and directories with each tool.
     run_jpred ${multifasta_testing} albindreycey@gmail.com
-    run_debext ../../../DebruijnExtend.py debext_${directory_suffix}/ 4
+    run_debext ../../../DebruijnExtend.py debext_${directory_suffix}/ ../TRAINING.pickle ../cluster_file.pickle 
     run_s4pred ../s4pred/run_model.py s4pred_${directory_suffix}/
     run_porter5 ../Porter5/Porter5.py porter5_${directory_suffix}/ 6
     run_spider2 ../SPIDER2/misc/run_local.sh spider2_${directory_suffix}/
