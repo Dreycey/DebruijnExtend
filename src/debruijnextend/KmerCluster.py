@@ -8,15 +8,11 @@ from typing import Dict, List, Optional, Union
 from tqdm import tqdm
 import os
 from os.path import exists
+# in-house packages
+from src.debruijnextend.utils import hamming_dist
 
 
 
-
-def hamming_dist(k1, k2):
-    val = 0
-    for ind, char in enumerate(k1):
-        if char != k2[ind]: val += 1
-    return val
 
 @dataclass
 class KmerCluster:
