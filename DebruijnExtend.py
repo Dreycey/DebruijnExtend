@@ -13,7 +13,7 @@ import numpy as np
 from pathlib import Path
 import os
 import pickle
-# import multiprocessing as mp
+import multiprocessing as mp
 # import threading
 # from concurrent.futures import ThreadPoolExecutor
 # import itertools
@@ -50,11 +50,22 @@ def parseArgs(argv=None) -> argparse.Namespace:
     parser.add_argument("-d", "--csv_data_path", help="path to CSV file containing amino-ss3 mapping (used with -ht)", required=False)
     return parser.parse_args(argv)
 
+# define a run per protein
+def run_debruijnExtend(input_seq, seq_name, kmer_size, hash_table, new_obj):
+    """
+    This method runs DebruijnExtend for an individual protein.
+    """
+    print(f"input: \n{input_seq},\n k_mer size: {kmer_size}")
+    secondary, prob = new_obj.debruijnextend(input_seq, kmer_size, hash_table)[0]
+    print(f"k={kmer_size}: {secondary}")
+    return secondary, prob, seq_name
+
 # RUN SCRIPT
 def main():
     """
     This function controls the flow of the script.
     """
+    global new_obj, outputfile
     args = parseArgs(sys.argv[1:])
     # get input ready
     proteins, protein_names = readFasta(args.input)
@@ -99,25 +110,33 @@ def main():
     # delete output file if exists
     if os.path.exists(outputfile):
         os.remove(outputfile)
-    # loop through proteins and predict structure
-    for protein_index, input_seq_name in enumerate(protein_names):
-        input_seq = proteins[protein_index]
 
-        # fix input - add glycine where * occurs
-        input_seq = clean_input_sequences(input_seq)
-        
-        # instantiate the object and run the algorithm
-        if args.use_clusters:
-            new_obj = DebruijnExtend(kmer_clust)
-        else:
-            new_obj = DebruijnExtend()
-        print(f"input: \n{input_seq},\n k_mer size: {kmer_size}")
-        secondary, prob = new_obj.debruijnextend(input_seq, kmer_size, hash_table)[0]
-        print(f"k={kmer_size}: {secondary}")
+    # instantiate the object and run the algorithm
+    if args.use_clusters:
+        new_obj = DebruijnExtend(kmer_clust)
+    else:
+        new_obj = DebruijnExtend()
 
-        # save the output
+    # get input ready
+    ARGS = [(clean_input_sequences(proteins[protein_index]), input_seq_name, kmer_size, hash_table, new_obj) \
+                for protein_index, input_seq_name in enumerate(protein_names)]
+
+    # run DebruijnExtend in Parralel
+    if args.threads:
+        threads = int(args.threads) if (1 <= int(args.threads)) else 1
+        print(f"running with {int(threads)} threads")
+        pool = mp.Pool(int(threads))
+        results = pool.starmap(run_debruijnExtend, ARGS)
+        pool.close()
+        pool.join()
+    else: # loop through proteins and predict structure
+        for input_args in ARGS:        
+            run_debruijnExtend(*input_args)
+
+    # save the output
+    for secondary, prob, input_seq_name in results:
         outfile = open(outputfile, "a")
         outfile.write(f"{input_seq_name}\n{prob}\n{secondary}\n")
-
+        outfile.close()
 if __name__ == "__main__":
     main()
