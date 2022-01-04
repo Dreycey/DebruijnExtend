@@ -14,6 +14,12 @@ import matplotlib.pyplot as plt
 
 
 
+def hamming_dist(k1, k2):
+    val = 0
+    for ind, char in enumerate(k1):
+        if char != k2[ind]: val += 1
+    return val
+
 def clean_input_sequences(input_seq):
     """
     This method cleans all input sequences to ensure they will
