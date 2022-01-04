@@ -43,7 +43,7 @@ class ProteinHash:
     def parse_csv(self, csv_file=None, delimitor: str=",") -> pd.DataFrame:
         """
         This method parses an input csv and places the sequences
-        and corresponding secondary structures into a pnadas dataframe.
+        and corresponding secondary structures into a pandas dataframe.
 
         Parameters
         ----------
@@ -65,8 +65,8 @@ class ProteinHash:
             structure_vector = []
             for csv_row in file_by_lines:
                 csv_row_list = csv_row.strip("\n").split(delimitor)
-                sequence_vector.append(csv_row_list[self.sequence_column])
-                structure_vector.append(csv_row_list[self.structure_column])
+                sequence_vector.append(csv_row_list[self.sequence_column].strip("'"))
+                structure_vector.append(csv_row_list[self.structure_column].strip("'"))
             # add sequences and structures to a pandas dataframe
             df = {'sequence': sequence_vector, 'structure': structure_vector}
             structseq_dataframe = pd.DataFrame(data=df)
@@ -92,7 +92,7 @@ class ProteinHash:
         """
         prothash = {}
         protein_df = self.parse_csv()
-        print("WORKING")
+        print(f"Creating hash table for kmer size = {self.k_mersize} (takes a couple minutes)")
         # make the hash table
         for kmer_start_position, row in tqdm(protein_df.iterrows()):
             primary_sequence, secondary_structure = row[seq_column_name], row[struct_column_name]
