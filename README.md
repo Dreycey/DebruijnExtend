@@ -32,6 +32,8 @@ DebruijnExtend.py [-h] [-v] -i INPUT (protein fasta) \
                             [-t THREADS] [-c USE_CLUSTERS]
 ```
 
+The input fasta file may be a single protein or a multifasta. The ordering of the output file will have the same format with the predicted 3-state secondary structure appearing below the name of the protein.
+
 ## Using DefaultData (pulled using the above)
 Before using the below methods, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
 
