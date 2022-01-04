@@ -28,8 +28,9 @@ gdown --folder --id 1VJKvfBaNFQj0zXCwKDTKcBzkgRT26bz-
 DebruijnExtend.py [-h] [-v] -i INPUT (protein fasta) \
                             -o OUTPUT_FILE (ss3 file) \
                             -ht HASH_TABLE \
-                            [-d CSV_DATA_PATH]
-                            [-t THREADS] [-c USE_CLUSTERS]
+                            [-c USE_CLUSTERS] \
+                            [-d CSV_DATA_PATH] \
+                            [-t THREADS]
 ```
 
 The input fasta file may be a single protein or a multifasta. The ordering of the output file will have the same format with the predicted 3-state secondary structure appearing below the name of the protein.
