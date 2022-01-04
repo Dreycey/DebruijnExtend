@@ -16,7 +16,7 @@ import math
 import pickle
 from tqdm import tqdm
 # in-house pkgs
-
+from src.debruijnextend.utils import hamming_dist
 
 
 
@@ -27,7 +27,7 @@ class DebruijnExtend():
     This class impliments the debruijn extend algorithm.
     """
     
-    def __init__(self, kmer_clusters=None):
+    def __init__(self, kmer_clusters=None, centroid_diff_threshold=5):
         """
         Constructor
 
@@ -39,6 +39,7 @@ class DebruijnExtend():
         self.secondary = ""
         self.secondary_alphabet = ["E","H","C"]
         self.kmer_clusters = kmer_clusters
+        self.centroid_diff_threshold = centroid_diff_threshold
 
     def get_kmers(self, primary_prot_seq: str, kmer_length: int) -> List[str]:
         """
@@ -89,7 +90,7 @@ class DebruijnExtend():
                     summ = np.sum([observed_count for observed_count in hash_table[kmer].values()])
                     temp_dict[secondary_kmer] = (-1) * math.log(round(observed_count / summ, 20)) # turn into probalities 
             else:
-                if self.kmer_clusters:
+                if self.kmer_clusters != None:
                     temp_dict = self.get_close_kmers_clusters(hash_table, kmer)
                 else:
                     temp_dict = self.get_close_kmers(hash_table, kmer)
@@ -112,17 +113,11 @@ class DebruijnExtend():
         finds possibl structures using clusers instead of all vs all
         """
         print(f"looking at kmer: {kmer}")
-        def hamming_dist(k1, k2):
-            val = 0
-            for ind, char in enumerate(k1):
-                if char != k2[ind]: val += 1
-            return val
         # find related clusters    
         print("looking at clusters")
-        threshold = 8
         kmers_to_look_at = []
         for centroid, cluster_kmers in tqdm(self.kmer_clusters.clusters.items()):
-            if hamming_dist(centroid, kmer) < threshold:
+            if hamming_dist(centroid, kmer) < self.centroid_diff_threshold:
                 kmers_to_look_at += [kmer_i for kmer_i in cluster_kmers]
         # use found kmers for further evaluation
         priority_queue = []
@@ -242,11 +237,6 @@ class DebruijnExtend():
 
         Output: {"HCHCG", 0.4}
         """
-        def hamming_dist(k1, k2):
-            val = 0
-            for ind, char in enumerate(k1):
-                if char != k2[ind]: val += 1
-            return val
 
         output_dict = {}
         priority_queue = []
