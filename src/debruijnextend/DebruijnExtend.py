@@ -1,3 +1,4 @@
+#! usr/bin/python3
 """
 DebruijnExtend module
 
@@ -27,7 +28,7 @@ class DebruijnExtend():
     This class impliments the debruijn extend algorithm.
     """
     
-    def __init__(self, kmer_clusters=None, centroid_diff_threshold=5):
+    def __init__(self, kmer_clusters=None, centroid_diff_threshold=None):
         """
         Constructor
 
@@ -93,7 +94,13 @@ class DebruijnExtend():
                 if self.kmer_clusters != None:
                     temp_dict = self.get_close_kmers_clusters(hash_table, kmer)
                 else:
-                    temp_dict = self.get_close_kmers(hash_table, kmer)
+                    new_k = len(kmer)-1
+                    #temp_dict = self.get_close_kmers(hash_table, kmer)
+                    temp_dict = self.debruijnextend(primary_seq=kmer, 
+                                                   kmer_size=new_k, 
+                                                   hash_table_path=Path(os.path.realpath(__file__)).parent/ \
+                                                                   Path(f"../../HashtableData/hashtable_k{new_k}.pickle"))
+                    temp_dict = dict(temp_dict)
             potential_secondaries[kmer] = temp_dict 
 
 
@@ -108,7 +115,7 @@ class DebruijnExtend():
         #     print(result)
         return potential_secondaries
 
-    def get_close_kmers_clusters(self, hash_table, kmer, top_N=10):
+    def get_close_kmers_clusters(self, hash_table, kmer, top_N=1):
         """
         finds possibl structures using clusers instead of all vs all
         """
@@ -213,7 +220,7 @@ class DebruijnExtend():
             else:
                 print("finding close kmers")
                 secondary_kmer = self.get_close_kmers(prot2secondary, protein_kmer)
-            print(f"secoondaary structures: {secondary_kmer}")
+            print(f"secondary structures: {secondary_kmer}")
             for secondary_k, secondary_prob in secondary_kmer.items():
                 # LOOP 3: loop through extended sequences
                 for extended_sequence, extended_probability in stitchextend_dict.items():
@@ -230,7 +237,7 @@ class DebruijnExtend():
                                                      max_dict_size)
         return stitchextend_dict
 
-    def get_close_kmers(self, prot2secondary, protein_kmer, top_N=10):
+    def get_close_kmers(self, prot2secondary, protein_kmer, top_N=1):
         """
         This method finds kmers that are close and uses the 
         structures for the top N.
@@ -317,7 +324,8 @@ class DebruijnExtend():
 
     def debruijnextend(self, primary_seq: str, 
                              kmer_size: int, 
-                             hash_table_path: Optional[Path]) -> List[str]:
+                             hash_table_path: Optional[Path],
+                             top_number=100) -> List[str]:
         """
         This method takes in a primary protein sequence annd returns the
         secondary structure predicted with the highest probability.
@@ -342,8 +350,9 @@ class DebruijnExtend():
         print(f"STEP 2: StitchExtend Method. Looping through layers /Dynamic Programming: \n")
         stitchextend_dict = self.stitchextend(primary_karray, potential_secondaries, kmer_size)
 
-        print(f"STEP 3: Choosing top 50 predictions \n")
-        top_number = 50
+        print(f"STEP 3: Choosing top {top_number} predictions \n")
         out_array = sorted(stitchextend_dict.items(), key=lambda item: item[1])[:top_number]
 
+        # try to remove from memory
+        del hash_table
         return out_array

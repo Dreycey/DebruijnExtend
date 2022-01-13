@@ -63,10 +63,11 @@ class ProteinHash:
             # construct the sequence and structure vectors from csv
             sequence_vector = []
             structure_vector = []
-            for csv_row in file_by_lines:
-                csv_row_list = csv_row.strip("\n").split(delimitor)
-                sequence_vector.append(csv_row_list[self.sequence_column].strip("'"))
-                structure_vector.append(csv_row_list[self.structure_column].strip("'"))
+            for line_number, csv_row in enumerate(file_by_lines):
+                if line_number > 0:
+                    csv_row_list = csv_row.strip("\n").split(delimitor)
+                    sequence_vector.append(csv_row_list[self.sequence_column].strip("'"))
+                    structure_vector.append(csv_row_list[self.structure_column].strip("'"))
             # add sequences and structures to a pandas dataframe
             df = {'sequence': sequence_vector, 'structure': structure_vector}
             structseq_dataframe = pd.DataFrame(data=df)
