@@ -92,7 +92,10 @@ class DebruijnExtend():
                     temp_dict[secondary_kmer] = (-1) * math.log(round(observed_count / summ, 20)) # turn into probalities 
             else:
                 if self.kmer_clusters != None:
-                    temp_dict = self.get_close_kmers_clusters(hash_table, kmer)
+                    temp_dict = self.kmer_clusters.get_close_kmers_clusters(hash_table, 
+                                                                            kmer, 
+                                                                            self.centroid_diff_threshold, 
+                                                                            top_N=1)
                 else:
                     new_k = len(kmer)-1
                     #temp_dict = self.get_close_kmers(hash_table, kmer)
@@ -104,32 +107,6 @@ class DebruijnExtend():
             potential_secondaries[kmer] = temp_dict 
 
         return potential_secondaries
-
-    def get_close_kmers_clusters(self, hash_table, kmer, top_N=1):
-        """
-        finds possibl structures using clusers instead of all vs all
-        """
-        # find related clusters    
-        kmers_to_look_at = []
-        for centroid, cluster_kmers in tqdm(self.kmer_clusters.clusters.items()):
-            if hamming_dist(centroid, kmer) < self.centroid_diff_threshold:
-                kmers_to_look_at += [kmer_i for kmer_i in cluster_kmers]
-        # use found kmers for further evaluation
-        priority_queue = []
-        highest_score = float("inf")
-        for kmer_j in tqdm(kmers_to_look_at):
-            hamming_score = hamming_dist(kmer_j, kmer)
-            if hamming_score < highest_score:
-                secondary_structs = hash_table[kmer_j]
-                priority_queue.append((hamming_score, secondary_structs))
-                priority_queue.sort(key=lambda a: a[0])
-            if len(priority_queue) > top_N: priority_queue.pop(-1)
-            highest_score = priority_queue[-1][0]
-        # turn into output dictionary
-        output_dict = {}
-        for saved_res in priority_queue:
-            output_dict.update(saved_res[1])
-        return output_dict
 
     def find_secondary(self, prot_kmer):
         """
@@ -175,7 +152,7 @@ class DebruijnExtend():
             This is the max dictionary size, which indicates the max number of extended
             sequences evaluated per iteration. Setting a size limit for this paramater
             prevents the time complexity from blowing up.
-        prob_cutoff: float [DEFAULT: 0.10]
+        prob_cutoff: float [DEFAULT: 0.70]
             The probabilitiy cutoff ensures that there are sequences for each iteration. If no
             extended sequences are found, then the heuristic is to add all possible combintations
             to the possible outputs.
@@ -195,7 +172,6 @@ class DebruijnExtend():
         for kmer_i in tqdm(range(1,len(primary_seq_kmers))):
             protein_kmer = primary_seq_kmers[kmer_i]
             stitchextend_dict_iplus = {}
-
             # LOOP 2: loop through kmers per layer 
             if protein_kmer in prot2secondary:
                 secondary_kmer = prot2secondary[protein_kmer]
@@ -224,7 +200,6 @@ class DebruijnExtend():
 
         Output: {"HCHCG", 0.4}
         """
-
         output_dict = {}
         priority_queue = []
         highest_score = float("inf")
@@ -244,6 +219,8 @@ class DebruijnExtend():
     def get_first_struct(self, primary2secondary_kmers, primary_seq_kmers):
         """
         This method finds the fist sequence to start extending from.
+        If it hasn't been seen before then it moves to the next possible kmer
+        that has been seen and allows for everything possble before that.
         """
         first_struct = {}
         skip_count = 0
