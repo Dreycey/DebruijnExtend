@@ -103,25 +103,13 @@ class DebruijnExtend():
                     temp_dict = dict(temp_dict)
             potential_secondaries[kmer] = temp_dict 
 
-
-        # self.hash_table = hash_table
-        # #pool = mp.Pool(8)
-        # with ThreadPoolExecutor(max_workers = 10) as executor:
-        #     potential_secondaries = dict(executor.map(self.find_secondary, [kmer for kmer in primary_karray]))
-        # #potential_secondaries = dict(pool.starmap(self.find_secondary, [(kmer,hash_table) for kmer in primary_karray]))
-        # #pool.close()
-        # #pool.join()
-        # for result in potential_secondaries:
-        #     print(result)
         return potential_secondaries
 
     def get_close_kmers_clusters(self, hash_table, kmer, top_N=1):
         """
         finds possibl structures using clusers instead of all vs all
         """
-        print(f"looking at kmer: {kmer}")
         # find related clusters    
-        print("looking at clusters")
         kmers_to_look_at = []
         for centroid, cluster_kmers in tqdm(self.kmer_clusters.clusters.items()):
             if hamming_dist(centroid, kmer) < self.centroid_diff_threshold:
@@ -137,12 +125,10 @@ class DebruijnExtend():
                 priority_queue.sort(key=lambda a: a[0])
             if len(priority_queue) > top_N: priority_queue.pop(-1)
             highest_score = priority_queue[-1][0]
-        print(priority_queue )
         # turn into output dictionary
         output_dict = {}
         for saved_res in priority_queue:
             output_dict.update(saved_res[1])
-        print(output_dict)
         return output_dict
 
     def find_secondary(self, prot_kmer):
@@ -204,23 +190,17 @@ class DebruijnExtend():
 
         #stitchextend_dict = prot2secondary[primary_seq_kmers[0]].copy()
         stitchextend_dict = self.get_first_struct(prot2secondary, primary_seq_kmers)
-        print(stitchextend_dict)
 
         # LOOP 1: looping through the layers
         for kmer_i in tqdm(range(1,len(primary_seq_kmers))):
             protein_kmer = primary_seq_kmers[kmer_i]
             stitchextend_dict_iplus = {}
 
-            print(f"stitchextend_dict =  {stitchextend_dict}")
             # LOOP 2: loop through kmers per layer 
             if protein_kmer in prot2secondary:
-                print("protein kmer found!")
                 secondary_kmer = prot2secondary[protein_kmer]
-                print(f"OUTPUT: {secondary_kmer}")
             else:
-                print("finding close kmers")
                 secondary_kmer = self.get_close_kmers(prot2secondary, protein_kmer)
-            print(f"secondary structures: {secondary_kmer}")
             for secondary_k, secondary_prob in secondary_kmer.items():
                 # LOOP 3: loop through extended sequences
                 for extended_sequence, extended_probability in stitchextend_dict.items():
@@ -248,7 +228,7 @@ class DebruijnExtend():
         output_dict = {}
         priority_queue = []
         highest_score = float("inf")
-        print(f"\t finding close seq to {protein_kmer}")
+        #print(f"\t finding close seq to {protein_kmer}")
         for protein_seq, secondary_structs in tqdm(prot2secondary.items()):
             hamming_score = hamming_dist(protein_seq, protein_kmer)
             if hamming_score < highest_score:
@@ -256,8 +236,7 @@ class DebruijnExtend():
                 priority_queue.sort(key=lambda a: a[0])
             if len(priority_queue) > top_N: priority_queue.pop(-1)
             highest_score = priority_queue[-1][0]
-        print(priority_queue)
-
+        # update dictionary
         for saved_res in priority_queue:
             output_dict.update(saved_res[1])
         return output_dict
@@ -270,18 +249,11 @@ class DebruijnExtend():
         skip_count = 0
         for kmer in primary_seq_kmers:
             struct = primary2secondary_kmers[kmer].copy()
-            print(f"struct: {struct}")
-            print(len(struct.keys()))
             if len(struct) == 0:
-                print("EMPTY")
                 skip_count += 1
             else:
-                # continue
-                # alphabet = ["H", "E", "C"]
-                # print(f"FOUND: {struct}")
                 for comb in itertools.combinations(self.secondary_alphabet, skip_count):
                     prepend_seq = ''.join(comb)
-                    print(f" prepend seq: {prepend_seq}")
                     for ss3, prob in struct.items():
                         new_seq = prepend_seq+ss3
                         k = len(ss3)
@@ -304,17 +276,12 @@ class DebruijnExtend():
         Heuristic 2: 
             Only keep the extended sequences with lowest neg log probability (highest probability).
         """
-        print(f"before heuristic: {stitchextend_dict_iplus}")
         # Heuristic 1
         if len(stitchextend_dict_iplus.keys()) < prob_cutoff*max_dict_size:
-            print("OKAY0")
             #stitchextend_dict_iplus = {} # empty the hash
-
             for extended_sequence, extended_probability in stitchextend_dict.items():
                 # extend with all H,C,E
-                print("OKAY1")
                 for nucleo_ext in self.secondary_alphabet:
-                    print("OKAY2")
                     extended_seq = extended_sequence + nucleo_ext
                     stitchextend_dict_iplus[extended_seq] = extended_probability + 100 # adding 100 -> low prob.
         # Heuristic 2
@@ -347,7 +314,7 @@ class DebruijnExtend():
         print(f"STEP 1: Hashing Method. Find corresponding secondary structures: \n")
         potential_secondaries = self.find_secondary_structs(primary_karray, hash_table)
 
-        print(f"STEP 2: StitchExtend Method. Looping through layers /Dynamic Programming: \n")
+        print(f"STEP 2: StitchExtend Method. Looping through layers of pseudo Debruijn Graph: \n")
         stitchextend_dict = self.stitchextend(primary_karray, potential_secondaries, kmer_size)
 
         print(f"STEP 3: Choosing top {top_number} predictions \n")
