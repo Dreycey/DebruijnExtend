@@ -69,11 +69,12 @@ def main():
     args = parseArgs(sys.argv[1:])
 
     # check arguments
-    if args.hash_table.isdigit() and args.use_clusters.isdigit():
-        if int(args.hash_table) <= int(args.use_clusters):
-            message = f"Hash Table size {args.hash_table} must be larger than cluster size! "
-            message += f"PROBLEM: {args.hash_table} > {args.use_clusters}"
-            raise HashTableClusterMismatchError(message)
+    if args.use_clusters:
+        if args.hash_table.isdigit() and args.use_clusters.isdigit():
+            if int(args.hash_table) <= int(args.use_clusters):
+                message = f"Hash Table size {args.hash_table} must be larger than cluster size! "
+                message += f"PROBLEM: {args.hash_table} > {args.use_clusters}"
+                raise HashTableClusterMismatchError(message)
 
     # get input ready
     proteins, protein_names = readFasta(args.input)
