@@ -14,12 +14,6 @@ USING CONDA:
 conda env create -f environment.yml
 ```
 
-# Download Defualt files
-Use a tool, `gdown`, to retrieve the files. `gdown` is included in the conda file.
-```
-gdown --folder --id 1VJKvfBaNFQj0zXCwKDTKcBzkgRT26bz-
-```
-
 # How to use this tool
 
 ## General Usage
@@ -35,17 +29,7 @@ DebruijnExtend.py [-h] [-v] -i INPUT (protein fasta) \
 
 The input fasta file may be a single protein or a multifasta. The ordering of the output file will have the same format with the predicted 3-state secondary structure appearing below the name of the protein.
 
-## Using DefaultData (pulled using the above)
-Before using the below methods, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
-
-### cluster-heuristic KNN (using default files downloaded using gdown)
-EXAMPLE:                                                                        
-```
-python3 DebruijnExtend.py -i examples/gfp.fasta \
-                          -o result.ss3
-                          -ht DefaultData/prothashtable_10.p \
-                          -c DefaultData/cluster_file.pickle
-```
+## Building Data Locally 
 
 ### cluster-heuristic KNN (fast) (not using default file)
 EXAMPLE:                                                                        
@@ -57,3 +41,21 @@ python3 DebruijnExtend.py -i examples/gfp.fasta \
 ```
 
 **note**: this first has to create the hash tables and KNN clusters, so it may take a couple minutes to create the needed information. After that it will run fast.
+
+## Using DefaultData
+
+### Download Defualt files
+Use a tool, `gdown`, to retrieve the files. `gdown` is included in the conda file.
+```
+gdown --folder --id 1VJKvfBaNFQj0zXCwKDTKcBzkgRT26bz-
+```
+
+### cluster-heuristic KNN (using default files downloaded using gdown)
+EXAMPLE:                                                                        
+```
+python3 DebruijnExtend.py -i examples/gfp.fasta \
+                          -o result.ss3
+                          -ht DefaultData/prothashtable_10.p \
+                          -c DefaultData/cluster_file.pickle
+```
+**note**: Before using this methods, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
