@@ -30,7 +30,7 @@ DebruijnExtend.py [-h] [-v] -i INPUT (protein fasta) \
 
 The input fasta file may be a single protein or a multifasta. The ordering of the output file will have the same format with the predicted 3-state secondary structure appearing below the name of the protein.
 
-## Building Data Locally 
+## Basic Usage (Building Data Locally)
 
 ### cluster-heuristic KNN (fast) (not using default file)
 EXAMPLE:                                                                        
@@ -43,7 +43,7 @@ python3 DebruijnExtend.py -i examples/gfp.fasta \
 
 **note**: this first has to create the hash tables and KNN clusters, so it may take a couple minutes to create the needed information. After that it will run fast.
 
-## Using DefaultData
+## Basic Usage (Using downloaded Default Data)
 
 ### Download Defualt files
 Use a tool, `gdown`, to retrieve the files. `gdown` is included in the conda file.
