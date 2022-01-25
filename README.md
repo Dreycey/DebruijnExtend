@@ -15,6 +15,7 @@ conda env create -f environment.yml
 ```
 
 # How to use this tool
+The most detailed information on usage is featured on the [DebruijnExtend Wiki](https://github.com/Dreycey/DebruijnExtend/wiki)
 
 ## General Usage
 * General Usage
