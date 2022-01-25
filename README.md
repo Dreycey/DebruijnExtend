@@ -4,7 +4,7 @@
 ![Debruijn Extend](figures/debruijnextend_logo.png)
 
 # DebruijnExtend
-### This repository contains the source code for the DebruijnExtend tool. Overall, this tool predicts the secondary structure of a protein given an input fasta file with protein(s).
+### This repository contains the source code for the DebruijnExtend tool. Overall, this tool predicts the secondary structure of a protein(s) given an input fasta file with protein(s).
 
 DebruijnExtend is a machine learning algorithm that constructs a probability-based de Bruijn graph using kmers of protein secondary structure fragments associated with a given primary sequence. Once created, edge contraction is used to find paths of highest probability to determine the overall predicted secondary structure.
 
@@ -41,7 +41,7 @@ python3 DebruijnExtend.py -i examples/gfp.fasta \
                           -c 4
 ```
 
-**note**: this first has to create the hash tables and KNN clusters, so it may take a couple minutes to create the needed information. After that it will run fast.
+**note**: This first has to create the hash tables and KNN clusters, so it may take a couple minutes to create the needed information.
 
 ## Basic Usage (Using downloaded Default Data)
 
@@ -59,4 +59,4 @@ python3 DebruijnExtend.py -i examples/gfp.fasta \
                           -ht DefaultData/prothashtable_10.p \
                           -c DefaultData/cluster_file.pickle
 ```
-**note**: Before using this methods, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
+**note**: Before using this method, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
