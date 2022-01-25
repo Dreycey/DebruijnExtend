@@ -85,7 +85,7 @@ Python DebruijnExtend.py -i examples/gfp.fasta \
                          -c 7 \
                          -d ${PWD}/NEW.csv 
 ```
-
+ 
 **note**, any supplied CSV must follow the following format:
 ```
 sequence length,PDB name,Protein Sequence,3 char ss3
