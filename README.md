@@ -38,16 +38,7 @@ The input fasta file may be a single protein or a multifasta. The ordering of th
 ## Using DefaultData (pulled using the above)
 Before using the below methods, make sure to get the premade hash table and clusters using the gdown command ('Download Defualt files' section above)
 
-### using default KNN (non-cluster method; time expensive)
-
-EXAMPLE (kmer size=10,CT=6):                                                                        
-```
-python3 DebruijnExtend.py -i examples/gfp.fasta \
-                          -o result.ss3 \
-                          -ht DefaultData/prothashtable_10.p
-```
-
-### using default file with cluster-heuristic KNN (fast)
+### cluster-heuristic KNN (using default files downloaded using gdown)
 EXAMPLE:                                                                        
 ```
 python3 DebruijnExtend.py -i examples/gfp.fasta \
@@ -56,38 +47,13 @@ python3 DebruijnExtend.py -i examples/gfp.fasta \
                           -c DefaultData/cluster_file.pickle
 ```
 
-## Creating new data files (hash table and clusters)
-
-### Creating new hash table (with default CSV)
-If the goal is to create a hash table of size 6, an integer can be supplied to the kmer flag `-ht 6`:
+### cluster-heuristic KNN (fast) (not using default file)
+EXAMPLE:                                                                        
 ```
-Python DebruijnExtend.py -i examples/gfp.fasta \
-                         -o result.ss3 \
-                         -ht 6
-```
-
-### Creating new hash table AND clusters (with default CSV)
-If the goal is to create a hash table of size 6, an integer can be supplied to the kmer flag `-ht 6`:
-```
-Python DebruijnExtend.py -i examples/gfp.fasta \
-                         -o result.ss3 \
-                         -ht 6 \
-                         --use_clusters 3
-```
-This creates a hash table of kmer size 6, if it doesn't exists. This hash table is then used to create the clusters with a hamming distance cut off of 3.
-
-### Creating new hash table (with new CSV)
-A new CSV for creating the hash table and clusters can be used, as long as a path is given:
-```
-Python DebruijnExtend.py -i examples/gfp.fasta \
-                         -o result.ss3 \
-                         -ht 10 \
-                         -c 7 \
-                         -d ${PWD}/NEW.csv 
+python3 DebruijnExtend.py -i examples/gfp.fasta \
+                          -o result.ss3
+                          -ht 6 \
+                          -c 4
 ```
 
-**note**, any supplied CSV must follow the following format:
-```
-sequence length,PDB name,Protein Sequence,3 char ss3
-50,'1PTQ','HRFKVYNYMSPTFCDHCGSLLWGLVKQGLKCEDCGMNVHHKCREKVANLC','CCEEEECCCCCCECCCCCCECCCCCCCEEEECCCCCEECHHHHCCCCCCC'
-```
+**note**: this first has to create the hash tables and KNN clusters, so it may take a couple minutes to create the needed information. After that it will run fast.
