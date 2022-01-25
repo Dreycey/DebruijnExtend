@@ -18,6 +18,32 @@ from src.debruijnextend.utils import hamming_dist
 class KmerCluster:
     clusters: Dict[str, List[str]]
 
+    def get_close_kmers_clusters(self, hash_table, kmer, centroid_diff_threshold, top_N=1):
+        """
+        finds possible structures using clusers instead of all vs all
+        """
+        # find relasted clusters    
+        kmers_to_look_at = []
+        for centroid, cluster_kmers in tqdm(self.clusters.items()):
+            if hamming_dist(centroid, kmer) < centroid_diff_threshold:
+                kmers_to_look_at += [kmer_i for kmer_i in cluster_kmers]
+        # use found kmers for further evaluation
+        priority_queue = []
+        highest_score = float("inf")
+        for kmer_j in tqdm(kmers_to_look_at):
+            hamming_score = hamming_dist(kmer_j, kmer)
+            if hamming_score < highest_score:
+                secondary_structs = hash_table[kmer_j]
+                priority_queue.append((hamming_score, secondary_structs))
+                priority_queue.sort(key=lambda a: a[0])
+            if len(priority_queue) > top_N: priority_queue.pop(-1)
+            highest_score = priority_queue[-1][0]
+        # turn into output dictionary
+        output_dict = {}
+        for saved_res in priority_queue:
+            output_dict.update(saved_res[1])
+        return output_dict
+
     @classmethod
     def init_struct(self, outputfile, cluster_file, threshold=6):
         """ create the data structure from a passed kmer dictionary """

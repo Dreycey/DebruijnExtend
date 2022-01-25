@@ -25,7 +25,7 @@ from src.debruijnextend.KmerCluster import KmerCluster
 from src.debruijnextend.DebruijnExtend import DebruijnExtend, HashTableType
 from src.debruijnextend.utils import readFasta, get_kmer_size, clean_input_sequences
 from src.debruijnextend.csvtohash import ProteinHash
-
+from src.debruijnextend.exceptions import HashTableClusterMismatchError
 
 
 def parseArgs(argv=None) -> argparse.Namespace:
@@ -67,6 +67,14 @@ def main():
     """
     global new_obj, outputfile
     args = parseArgs(sys.argv[1:])
+
+    # check arguments
+    if args.use_clusters:
+        if args.hash_table.isdigit() and args.use_clusters.isdigit():
+            if int(args.hash_table) <= int(args.use_clusters):
+                message = f"Hash Table size {args.hash_table} must be larger than cluster size! "
+                message += f"PROBLEM: {args.hash_table} > {args.use_clusters}"
+                raise HashTableClusterMismatchError(message)
 
     # get input ready
     proteins, protein_names = readFasta(args.input)
@@ -118,7 +126,7 @@ def main():
 
     # instantiate the object and run the algorithm
     if args.use_clusters:
-        new_obj = DebruijnExtend(kmer_clust)
+        new_obj = DebruijnExtend(kmer_clust, centroid_diff_threshold=kmer_size-2)
     else:
         new_obj = DebruijnExtend()
 
@@ -136,7 +144,7 @@ def main():
         results = pool.starmap(run_debruijnExtend, ARGS)
         pool.close()
         pool.join()
-    else: # loop through proteins and predict structure
+    else: # no threads: loop through proteins and predict structure 1by1
         results = []
         for input_args in ARGS:        
             results.append(run_debruijnExtend(*input_args))
