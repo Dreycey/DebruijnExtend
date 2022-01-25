@@ -21,7 +21,7 @@ function run_debext() {
             python3 ${debext_path} -i ${fasta_file} \
                                    -ht ${kmer_size} \
                                    -o ${fasta_file%.fna}.ss3 \
-                                   #--use_clusters ${cluster_file} \
+                                   --use_clusters ${cluster_file} \
             ) 2> ${fasta_file%.fna}_time.txt 
         fi
     done
@@ -58,8 +58,8 @@ function main() {
     #echo "../../../HashtableData_i${identity_cutoff}/hashtable_k6.pickle"
     # use multifasta and directories with each tool.
     run_debext ../../../DebruijnExtend.py debext_${directory_suffix}/ \
-                                          ../../../HashtableData/hashtable_k6.pickle \
-                                          #../../../ClusterData_i${identity_cutoff}/cluster_k6_CT4.pickle
+                                          6 \
+                                          4
 }
 echo; echo "Running Benchmarking for DebruijnExtend"; echo; echo;
 main $1 $2;
